@@ -152,6 +152,15 @@
   .contact-box h3{color:var(--navy);margin-bottom:12px}
   .contact-box p{margin-bottom:10px;color:#33415c}
   .contact-box b{color:var(--navy)}
+  .socmed{display:flex;flex-direction:column;gap:12px;margin:2px 0 12px}
+  .socmed a{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--navy);font-weight:700}
+  .socmed a:hover{text-decoration:underline}
+  .socmed .ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:0 0 36px}
+  .socmed .ic svg{width:20px;height:20px;display:block}
+  .socmed .ig{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)}
+  .socmed .fb{background:#1877f2}
+  .socmed .tt{background:#010101}
+  .socmed small{display:block;font-weight:400;color:var(--muted);font-size:13px}
 
   footer{background:var(--navy);color:#c9d8f5;padding:30px 0;font-size:14px}
   footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
@@ -453,8 +462,11 @@
       </div>
       <div class="contact-box">
         <h3>Media Sosial</h3>
-        <p><b>Facebook:</b> arodianindramayu</p>
-        <p><b>TikTok:</b> arodianindramayu</p>
+        <div class="socmed">
+          <a href="https://www.instagram.com/arodianmolis_indramayu" target="_blank" rel="noopener"><span class="ic ig"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="2.8" y="2.8" width="18.4" height="18.4" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.3" cy="6.7" r="1.15" fill="#fff" stroke="none"/></svg></span><span>Instagram<small>@arodianmolis_indramayu</small></span></a>
+          <a href="https://www.facebook.com/share/1ALJQAGGrd/" target="_blank" rel="noopener"><span class="ic fb"><svg viewBox="0 0 24 24" fill="#fff"><path d="M13.6 21v-6.9h2.3l.4-2.9h-2.7V9.3c0-.8.3-1.4 1.5-1.4h1.3V5.3c-.3 0-1.1-.1-2-.1-2.1 0-3.5 1.3-3.5 3.6v2.4H8.4v2.9h2.5V21h2.7z"/></svg></span><span>Facebook<small>Arodian Molis Indramayu</small></span></a>
+          <a href="https://www.tiktok.com/@arodianindramayu" target="_blank" rel="noopener"><span class="ic tt"><svg viewBox="0 0 24 24" fill="#fff"><path d="M16.7 3c.4 2 1.7 3.5 3.8 3.8v3c-1.5 0-2.8-.4-3.8-1.2v6.5c0 3.3-2.4 5.9-5.7 5.9A5.6 5.6 0 0 1 5.4 15c0-3.1 2.5-5.6 5.6-5.6.3 0 .6 0 1 .1v3.2a2.6 2.6 0 0 0-1-.2 2.5 2.5 0 0 0-2.5 2.5c0 1.4 1.1 2.5 2.5 2.5 1.5 0 2.7-1.2 2.7-2.8V3h3z"/></svg></span><span>TikTok<small>@arodianindramayu</small></span></a>
+        </div>
         <p><b>Website:</b> arodian.web.id</p>
         <p style="color:var(--muted);font-size:14px">Ikuti kami untuk info produk, promo, dan unit terbaru.</p>
       </div>
