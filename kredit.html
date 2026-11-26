@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulasi Kredit Motor Listrik Arodian | Arodian Molis Indramayu</title>
+<meta name="description" content="Simulasi kredit motor listrik roda tiga Arodian (AD1600, AD1800, AD1600P, AD1800P, Custom Box): hitung uang muka (DP 0%, 10%, 25%, 50%) dan angsuran per bulan untuk tenor 12 dan 24 bulan. Arodian Molis Indramayu — melayani seluruh Indonesia.">
+<link rel="canonical" href="https://www.arodian.web.id/kredit">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="48x48" href="images/favicon-48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+<meta property="og:title" content="Simulasi Kredit Motor Listrik Arodian">
+<meta property="og:description" content="Hitung DP dan angsuran per bulan motor listrik roda tiga Arodian — tenor 12 dan 24 bulan, DP 0%, 10%, 25%, 50%.">
+<meta property="og:url" content="https://www.arodian.web.id/kredit">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.arodian.web.id/images/hero.jpg">
+<style>
+  :root{
+    --blue:#0a4fd6; --blue-dark:#073a8f; --navy:#06265e; --sky:#eaf2ff;
+    --ink:#14213d; --muted:#5b6b84; --line:#dbe4f2; --wa:#25d366; --wa-dark:#1eb85a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;color:var(--ink);background:#f2f5fa;line-height:1.55}
+  img{max-width:100%;display:block}
+  a{text-decoration:none}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+
+  /* Header (sama persis dengan halaman utama) */
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+  header .wrap{max-width:1240px}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:10px 0;flex-wrap:nowrap}
+  .brand{display:flex;flex-direction:row;align-items:center;gap:12px;line-height:1.2}
+  .brand-text{display:flex;flex-direction:column;gap:2px}
+  .brand-text .ml{font-size:17px;font-weight:800;color:var(--navy);letter-spacing:1.2px;white-space:nowrap}
+  .brand img.logo-img{height:40px;width:auto;aspect-ratio:723/160;object-fit:contain;display:block;flex:none}
+  @media(max-width:820px){.brand img.logo-img{height:36px}.brand-text .ml{font-size:15px}}
+  .brand .logo{font-size:22px;font-weight:800;letter-spacing:.5px;color:var(--blue);white-space:nowrap}
+  .brand .logo span{color:var(--navy)}
+  .brand .tag{font-size:10px;letter-spacing:2px;color:var(--muted);font-weight:600;white-space:nowrap}
+  .menu{display:flex;gap:10px;align-items:center;flex-wrap:nowrap}
+  .menu a{color:var(--ink);font-weight:600;font-size:14.5px;white-space:nowrap}
+  .menu a:not(.btn){padding:7px 12px;border:1.5px solid #c8d3e6;border-radius:999px;background:linear-gradient(180deg,#ffffff,#e4eaf3)}
+  .menu a:hover{color:var(--blue)}
+  .menu a:not(.btn):hover{background:linear-gradient(180deg,#eef4ff,#d8e6ff);border-color:var(--blue)}
+  .btn{display:inline-block;padding:10px 20px;border-radius:999px;font-weight:700;font-size:14.5px;transition:.15s;white-space:nowrap}
+  .btn-wa{background:var(--wa);color:#fff}
+  .btn-wa:hover{background:var(--wa-dark)}
+  @media(max-width:1280px){.menu{gap:8px}.menu a:not(.btn){padding:6px 10px}.brand .logo{font-size:19px}}
+  @media(max-width:820px){.menu a{display:none}.menu a.btn{display:inline-block;padding:9px 16px}}
+
+  /* Judul halaman */
+  .pagehead{background:linear-gradient(160deg,#0b2545,#123c6e 55%,#1663b8);color:#fff;padding:30px 18px 26px;text-align:center}
+  .pagehead h1{font-size:26px;line-height:1.25;margin-bottom:6px}
+  .pagehead p{color:#dbe7ff;font-size:15px;line-height:1.55;max-width:640px;margin:0 auto}
+
+  /* Simulasi */
+  .simwrap{max-width:680px;margin:0 auto;padding:22px 14px 42px}
+  .card{background:#fff;border:1px solid #dde5f0;border-radius:16px;box-shadow:0 6px 20px rgba(11,37,69,.08);padding:22px 20px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-weight:700;font-size:14px;color:var(--navy);margin-bottom:8px}
+  select{width:100%;padding:13px 14px;font-size:16px;border:2px solid #1663b8;border-radius:12px;background:#fff;color:var(--ink);outline:none}
+  .harga{font-size:15px;color:var(--muted);margin-top:8px}
+  .harga b{color:var(--navy);font-size:17px}
+  .opts{display:flex;gap:10px;flex-wrap:wrap}
+  .opt{flex:1 1 auto;min-width:70px;padding:11px 10px;border:1.5px solid #c8d3e6;border-radius:999px;background:linear-gradient(180deg,#ffffff,#e4eaf3);font-weight:700;font-size:15px;color:var(--ink);cursor:pointer;text-align:center;transition:.15s}
+  .opt:hover{border-color:var(--blue)}
+  .opt.on{background:linear-gradient(180deg,#1663b8,#0a4fd6);border-color:#0a4fd6;color:#fff}
+  .result{border-top:1px dashed var(--line);margin-top:4px;padding-top:16px}
+  .row{display:flex;justify-content:space-between;gap:14px;padding:6px 0;font-size:15px}
+  .row span{color:var(--muted)}
+  .row b{color:var(--navy);white-space:nowrap}
+  .angsuran{background:var(--sky);border-radius:12px;text-align:center;padding:16px 10px;margin:14px 0 6px}
+  .angsuran .lbl{font-size:13.5px;color:var(--muted);font-weight:600;letter-spacing:.4px}
+  .angsuran .val{font-size:30px;font-weight:800;color:var(--navy);line-height:1.2}
+  .angsuran .per{font-size:14px;color:var(--muted)}
+  .ctawa{display:block;text-align:center;background:var(--wa);color:#fff;font-weight:800;font-size:16px;padding:14px 18px;border-radius:999px;margin-top:16px}
+  .ctawa:hover{background:var(--wa-dark)}
+  .note{background:#fff;border:1px solid #dde5f0;border-left:4px solid #ffd23f;border-radius:10px;padding:13px 16px;font-size:13.5px;line-height:1.6;margin-top:16px;color:#41546e}
+  footer{text-align:center;color:#5b6b84;font-size:12.5px;line-height:1.7;padding:0 14px 34px}
+  footer a{color:#1663b8;text-decoration:none;font-weight:600}
+  @media(max-width:560px){.pagehead h1{font-size:22px}.angsuran .val{font-size:25px}.opt{min-width:60px;font-size:14px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <img class="logo-img" src="images/logo.png" alt="Logo Arodian" width="723" height="160">
+      <div class="brand-text">
+        <div class="ml">MOTOR LISTRIK</div>
+        <div class="tag">DEALER INDRAMAYU &bull; ARODIAN.WEB.ID</div>
+      </div>
+    </div>
+    <nav class="menu">
+      <a href="/#produk">Produk</a>
+      <a href="/parts">Sparepart</a>
+      <a href="/kredit">Simulasi Kredit</a>
+      <a href="/#kontak">Kontak</a>
+      <a class="btn btn-wa" href="https://wa.me/6281919777398?text=Halo%20Arodian%20Molis%20Indramayu%2C%20saya%20ingin%20bertanya%20tentang%20kredit%20motor%20listrik%20Arodian." target="_blank" rel="noopener">Chat WhatsApp</a>
+    </nav>
+  </div>
+</header>
+
+<div class="pagehead">
+  <h1>Simulasi Kredit Arodian</h1>
+  <p>Hitung perkiraan uang muka dan angsuran per bulan untuk motor listrik roda tiga Arodian. Pilih unit, tenor, dan DP — hasilnya langsung tampil.</p>
+</div>
+
+<div class="simwrap">
+  <div class="card">
+    <div class="field">
+      <label for="unit">Pilih Unit</label>
+      <select id="unit"></select>
+      <div class="harga">Harga jual: <b id="harga">—</b></div>
+    </div>
+    <div class="field">
+      <label>Tenor</label>
+      <div class="opts" id="tenorOpts">
+        <button type="button" class="opt on" data-tenor="12">12 Bulan</button>
+        <button type="button" class="opt" data-tenor="24">24 Bulan</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Uang Muka (DP)</label>
+      <div class="opts" id="dpOpts">
+        <button type="button" class="opt on" data-dp="0">0%</button>
+        <button type="button" class="opt" data-dp="10">10%</button>
+        <button type="button" class="opt" data-dp="25">25%</button>
+        <button type="button" class="opt" data-dp="50">50%</button>
+      </div>
+    </div>
+    <div class="result">
+      <div class="row"><span>Harga jual</span><b id="rHarga">—</b></div>
+      <div class="row"><span>Uang muka (DP)</span><b id="rDp">—</b></div>
+      <div class="row"><span>Sisa pokok</span><b id="rSisa">—</b></div>
+      <div class="angsuran">
+        <div class="lbl">ANGSURAN PER BULAN</div>
+        <div class="val" id="rAngsuran">—</div>
+        <div class="per" id="rPer">—</div>
+      </div>
+      <a class="ctawa" id="ctawa" href="#" target="_blank" rel="noopener">Ajukan via WhatsApp</a>
+    </div>
+  </div>
+  <div class="note">Hasil simulasi ini adalah perkiraan awal dari Arodian Molis Indramayu. Persetujuan kredit, syarat administrasi, dan angka final mengikuti ketentuan lembaga pembiayaan yang bekerja sama dengan kami. Hubungi kami lewat WhatsApp untuk proses pengajuan dan cek ketersediaan unit.</div>
+</div>
+
+<footer>
+  © 2026 Arodian Molis Indramayu — Jl. Raya Trisi, samping Masjid Raudhatus Salam - Karang Turi, Trisi, Indramayu<br>
+  Motor listrik roda tiga — “Murah di Kantong, Kuat di Jalan” · <a href="https://www.arodian.web.id/">www.arodian.web.id</a>
+</footer>
+
+<script>
+  const PRODUCTS = [
+    {name:"AD 1800", price:39999000},
+    {name:"AD 1600", price:35999000},
+    {name:"AD 1800P", price:45999000},
+    {name:"AD 1600P", price:40999000},
+    {name:"AD1800 - 2500W", price:42999000},
+    {name:"AD1800P - 2500W", price:48999000},
+    {name:"AD1800 - 2500W Mobil Buang", price:44999000},
+    {name:"AD 1800P Box Satu Pintu (Buka Kanan-Kiri)", price:56999000},
+    {name:"AD 1600P Box Satu Pintu (Buka Kanan-Kiri)", price:47999000},
+    {name:"AD 1800P Box Satu Pintu (Buka Atas-Bawah)", price:57999000},
+    {name:"AD 1600P Box Satu Pintu (Buka Atas-Bawah)", price:48999000},
+    {name:"AD 1800P Box Dua Pintu (1 Pintu Buka Kanan-Kiri 1 Pintu Buka Atas-Bawah)", price:60999000},
+    {name:"AD 1600P Box Dua Pintu (1 Pintu Buka Kanan-Kiri 1 Pintu Buka Atas-Bawah)", price:52999000},
+    {name:"AD 1800P Box Tiga Pintu (Buka Atas-Bawah)", price:76999000},
+    {name:"AD 1600P Box Tiga Pintu (Buka Atas-Bawah)", price:54999000},
+    {name:"AD 1800P Box Tiga Pintu (1 Pintu Buka Kanan-Kiri, 1 Pintu Buka Atas-Bawah, 1 Pintu Belakang Buka Kanan-Kiri)", price:64999000},
+    {name:"AD 1600P Box Tiga Pintu (1 Pintu Buka Kanan-Kiri, 1 Pintu Buka Atas-Bawah, 1 Pintu Belakang Buka Kanan-Kiri)", price:54999000},
+    {name:"AD 1600P Box + Pendingin", price:55999000},
+    {name:"AD 1800P Box + Pendingin", price:63999000},
+    {name:"Kargo AD 1800 + Pagar", price:51999000},
+    {name:"AD 1800P-2500W Truk Pengangkut Sampah", price:60999000},
+    {name:"AD 1600P-2500W Truk Pengangkut Sampah Mini", price:48999000},
+    {name:"Angkut Barang 2,2x2,2 m", price:81999000},
+    {name:"Gerobak Makan Pintu Sayap Burung Standar", price:57999000},
+    {name:"Gerobak Makanan Ukuran Besar (Food truck)", price:88000000}
+  ];
+  const MARGIN = {12:0.35, 24:0.55};
+  let tenor = 12, dpPct = 0;
+  const sel = document.getElementById('unit');
+  PRODUCTS.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=p.name; sel.appendChild(o); });
+  const fmt = n => "Rp " + Math.round(n).toLocaleString("id-ID");
+  function calc(){
+    const p = PRODUCTS[Number(sel.value)];
+    const dp = Math.round(p.price * dpPct/100 / 1000) * 1000;
+    const sisa = p.price - dp;
+    const angsuran = Math.round(sisa * (1 + MARGIN[tenor]) / tenor);
+    document.getElementById('harga').textContent = fmt(p.price);
+    document.getElementById('rHarga').textContent = fmt(p.price);
+    document.getElementById('rDp').textContent = fmt(dp) + " (" + dpPct + "%)";
+    document.getElementById('rSisa').textContent = fmt(sisa);
+    document.getElementById('rAngsuran').textContent = fmt(angsuran);
+    document.getElementById('rPer').textContent = "per bulan × " + tenor + " bulan";
+    const msg = "Halo Arodian Molis Indramayu, saya ingin mengajukan kredit " + p.name +
+      " (harga " + fmt(p.price) + "), tenor " + tenor + " bulan, DP " + dpPct + "% (" + fmt(dp) +
+      "), angsuran sekitar " + fmt(angsuran) + "/bulan. Mohon info selanjutnya.";
+    document.getElementById('ctawa').href = "https://wa.me/6281919777398?text=" + encodeURIComponent(msg);
+  }
+  sel.addEventListener('change', calc);
+  document.getElementById('tenorOpts').addEventListener('click', e=>{
+    const b = e.target.closest('[data-tenor]'); if(!b) return;
+    tenor = Number(b.dataset.tenor);
+    document.querySelectorAll('#tenorOpts .opt').forEach(x=>x.classList.toggle('on', x===b));
+    calc();
+  });
+  document.getElementById('dpOpts').addEventListener('click', e=>{
+    const b = e.target.closest('[data-dp]'); if(!b) return;
+    dpPct = Number(b.dataset.dp);
+    document.querySelectorAll('#dpOpts .opt').forEach(x=>x.classList.toggle('on', x===b));
+    calc();
+  });
+  calc();
+</script>
+</body>
+</html>
