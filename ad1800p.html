@@ -114,6 +114,18 @@
     .stats{grid-template-columns:repeat(2,1fr)}
     .phead h1{font-size:28px}
   }
+
+  /* Header mobile: cegah overflow di layar kecil */
+  @media(max-width:640px){
+    header .wrap{padding:0 12px}
+    .nav{gap:8px}
+    .brand{gap:7px}
+    .brand img.logo-img{height:26px}
+    .brand-text .ml{font-size:12px;letter-spacing:.5px}
+    .brand .tag{display:none}
+    .menu a.btn{font-size:0;padding:8px 12px}
+    .menu a.btn::after{content:"WhatsApp";font-size:12.5px;font-weight:700}
+  }
 </style>
 </head>
 <body>
