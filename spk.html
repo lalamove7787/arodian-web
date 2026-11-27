@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>SPK Online — Arodian Molis Indramayu</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+  :root{ --oranye:#e8590c; --gelap:#1f2733; --abu:#6b7684; --garis:#dde3ea; --latar:#f4f6f9; --ok:#1e9e62; --err:#d64545; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; background:var(--latar); color:var(--gelap); }
+  button{ font:inherit; cursor:pointer; }
+  input,select,textarea{ font:inherit; padding:9px 10px; border:1px solid var(--garis); border-radius:8px; width:100%; background:#fff; }
+  input:focus,select:focus,textarea:focus{ outline:2px solid #ffd8b8; border-color:var(--oranye); }
+  label{ display:block; font-size:13px; font-weight:600; margin:10px 0 4px; color:#39424e; }
+  .wrap{ max-width:1060px; margin:0 auto; padding:16px; }
+  /* Login */
+  #loginView{ max-width:400px; margin:9vh auto 0; background:#fff; border:1px solid var(--garis); border-radius:14px; padding:28px 24px; box-shadow:0 8px 30px rgba(20,30,45,.08); }
+  #loginView h1{ font-size:20px; margin:0 0 4px; }
+  #loginView p{ margin:0 0 14px; color:var(--abu); font-size:14px; }
+  .btn{ display:inline-block; border:0; border-radius:9px; padding:10px 16px; font-weight:700; background:var(--oranye); color:#fff; }
+  .btn:hover{ filter:brightness(1.07); }
+  .btn.abu{ background:#e8edf2; color:var(--gelap); }
+  .btn.hijau{ background:var(--ok); }
+  .btn.kecil{ padding:6px 10px; font-size:13px; border-radius:7px; }
+  .btn:disabled{ opacity:.55; cursor:default; }
+  .pesan{ margin:12px 0; padding:10px 12px; border-radius:8px; font-size:14px; display:none; }
+  .pesan.err{ display:block; background:#fdecec; color:#8f1d1d; border:1px solid #f5c2c2; }
+  .pesan.ok{ display:block; background:#e7f7ee; color:#145c39; border:1px solid #bfe8d2; }
+  /* App shell */
+  header.app{ background:#fff; border-bottom:1px solid var(--garis); position:sticky; top:0; z-index:5; }
+  header.app .wrap{ display:flex; align-items:center; gap:12px; padding-top:10px; padding-bottom:10px; }
+  .brand{ font-weight:800; font-size:17px; }
+  .brand span{ color:var(--oranye); }
+  .siapa{ margin-left:auto; font-size:13px; color:var(--abu); text-align:right; }
+  nav.tabs{ display:flex; gap:8px; flex-wrap:wrap; margin:14px 0; }
+  nav.tabs button{ border:1px solid var(--garis); background:#fff; border-radius:999px; padding:8px 14px; font-weight:600; }
+  nav.tabs button.aktif{ background:var(--gelap); color:#fff; border-color:var(--gelap); }
+  .kartu{ background:#fff; border:1px solid var(--garis); border-radius:12px; padding:16px; margin-bottom:14px; }
+  .kartu h2{ margin:0 0 6px; font-size:17px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+  .grid .penuh{ grid-column:1 / -1; }
+  @media (max-width:640px){ .grid{ grid-template-columns:1fr; } }
+  table{ width:100%; border-collapse:collapse; font-size:14px; }
+  th,td{ text-align:left; padding:8px 8px; border-bottom:1px solid var(--garis); vertical-align:top; }
+  th{ color:var(--abu); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .baris-aksi{ display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; align-items:center; }
+  .baris-aksi .tumbuh{ flex:1; min-width:180px; }
+  .kecil-teks{ font-size:13px; color:var(--abu); }
+  .badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:700; }
+  .badge.on{ background:#e7f7ee; color:#145c39; }
+  .badge.off{ background:#fdecec; color:#8f1d1d; }
+  .badge.owner{ background:#fff1e6; color:#9a4a00; }
+  dialog{ border:1px solid var(--garis); border-radius:12px; max-width:420px; width:92vw; }
+  dialog::backdrop{ background:rgba(20,30,45,.45); }
+  .sembunyi{ display:none !important; }
+  /* Print */
+  #printArea{ display:none; }
+  @media print{
+    body{ background:#fff; }
+    #appView, #loginView{ display:none !important; }
+    #printArea{ display:block; font-size:12px; color:#000; }
+    #printArea .halaman{ page-break-after:always; }
+    #printArea .halaman:last-child{ page-break-after:auto; }
+    #printArea table{ font-size:12px; }
+    #printArea th, #printArea td{ border-bottom:1px solid #bbb; }
+    @page{ margin:14mm; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="loginView">
+  <h1>SPK Online</h1>
+  <p>Arodian Molis Indramayu — khusus pemilik &amp; pegawai.</p>
+  <div id="loginMsg" class="pesan"></div>
+  <form id="loginForm">
+    <label for="li_email">Email</label>
+    <input id="li_email" type="email" autocomplete="username" required>
+    <label for="li_pass">Kata sandi</label>
+    <input id="li_pass" type="password" autocomplete="current-password" required>
+    <div style="margin-top:16px"><button class="btn" type="submit" id="loginBtn" style="width:100%">Masuk</button></div>
+  </form>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="appView" class="sembunyi">
+  <header class="app">
+    <div class="wrap">
+      <div class="brand">SPK <span>Online</span></div>
+      <div class="siapa"><div id="siapaNama"></div><div id="siapaRole" class="kecil-teks"></div></div>
+      <button class="btn abu kecil" id="logoutBtn">Keluar</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <nav class="tabs" id="tabs">
+      <button data-tab="list" class="aktif">Daftar SPK</button>
+      <button data-tab="form">Buat SPK</button>
+      <button data-tab="users" id="tabUsers" class="sembunyi">Pengguna</button>
+      <button data-tab="products" id="tabProducts" class="sembunyi">Produk &amp; Harga</button>
+    </nav>
+    <div id="appMsg" class="pesan"></div>
+
+    <!-- ===== LIST ===== -->
+    <section id="view-list">
+      <div class="kartu">
+        <div class="baris-aksi">
+          <input id="cari" class="tumbuh" type="search" placeholder="Cari No. SPK, nama pemesan, atau model…">
+          <button class="btn abu kecil" id="csvBtn">Ekspor CSV</button>
+          <button class="btn kecil" id="baruBtn">+ SPK Baru</button>
+        </div>
+        <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>No. SPK</th><th>Tanggal</th><th>Pemesan</th><th>Model</th><th>Harga</th><th id="thOleh">Dibuat oleh</th><th></th></tr></thead>
+          <tbody id="spkBody"><tr><td colspan="7" class="kecil-teks">Memuat…</td></tr></tbody>
+        </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FORM ===== -->
+    <section id="view-form" class="sembunyi">
+      <form id="spkForm">
+        <div class="kartu">
+          <h2 id="formJudul">SPK Baru</h2>
+          <p class="kecil-teks">Nomor SPK dibuat otomatis saat disimpan. Kolom bertanda * wajib diisi.</p>
+          <div class="grid">
+            <div><label>Tanggal SPK</label><input type="date" id="f_spk_date"></div>
+            <div><label>Sales PIC</label><input type="text" id="f_sales_pic"></div>
+            <div><label>Sales Manager</label><input type="text" id="f_sales_manager"></div>
+            <div><label>Nama Toko</label><input type="text" id="f_store_name"></div>
+            <div><label>No. Telepon Toko</label><input type="text" id="f_store_phone"></div>
+            <div><label>Alamat Toko</label><input type="text" id="f_store_address"></div>
+          </div>
+        </div>
+
+        <div class="kartu">
+          <h2>Data Pemesan</h2>
+          <div class="grid">
+            <div><label>Nama *</label><input type="text" id="f_buyer_name" required></div>
+            <div><label>No. KTP</label><input type="text" id="f_buyer_ktp" inputmode="numeric"></div>
+            <div class="penuh"><label>Alamat</label><textarea id="f_buyer_address" rows="2"></textarea></div>
+            <div><label>Provinsi</label><input type="text" id="f_buyer_province"></div>
+            <div><label>Kota/Kabupaten</label><input type="text" id="f_buyer_city"></div>
+            <div><label>Kecamatan</label><input type="text" id="f_buyer_district"></div>
+            <div><label>Kelurahan</label><input type="text" id="f_buyer_village"></div>
+            <div><label>Kode Pos</label><input type="text" id="f_buyer_postal" inputmode="numeric"></div>
+            <div><label>No. HP</label><input type="text" id="f_buyer_hp" inputmode="tel"></div>
+            <div><label>No. Telpon</label><input type="text" id="f_buyer_phone" inputmode="tel"></div>
+            <div><label>Email</label><input type="email" id="f_buyer_email"></div>
+          </div>
+          <label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:14px">
+            <input type="checkbox" id="f_same" checked style="width:auto"> Data Faktur sama dengan Data Pemesan
+          </label>
+        </div>
+
+        <div class="kartu" id="fakturKartu">
+          <h2>Data Faktur</h2>
+          <div class="grid">
+            <div><label>Nama</label><input type="text" id="f_invoice_name"></div>
+            <div><label>No. KTP</label><input type="text" id="f_invoice_ktp" inputmode="numeric"></div>
+            <div class="penuh"><label>Alamat</label><textarea id="f_invoice_address" rows="2"></textarea></div>
+            <div><label>Provinsi</label><input type="text" id="f_invoice_province"></div>
+            <div><label>Kota/Kabupaten</label><input type="text" id="f_invoice_city"></div>
+            <div><label>Kecamatan</label><input type="text" id="f_invoice_district"></div>
+            <div><label>Kelurahan</label><input type="text" id="f_invoice_village"></div>
+            <div><label>Kode Pos</label><input type="text" id="f_invoice_postal" inputmode="numeric"></div>
+            <div><label>No. HP</label><input type="text" id="f_invoice_hp" inputmode="tel"></div>
+            <div><label>No. Telpon</label><input type="text" id="f_invoice_phone" inputmode="tel"></div>
+            <div><label>Email</label><input type="email" id="f_invoice_email"></div>
+          </div>
+        </div>
+
+        <div class="kartu">
+          <h2>Data Kendaraan</h2>
+          <div class="grid">
+            <div><label>Model (dari daftar harga) *</label><select id="f_product"></select></div>
+            <div><label>Nama Model (sesuai cetakan)</label><input type="text" id="f_model_name"></div>
+            <div><label>Harga (Rp)</label><input type="number" id="f_price" min="0" step="1000"></div>
+            <div><label>Warna</label><input type="text" id="f_color" list="warnaList" placeholder="Abu-abu / Merah / Hijau Tosca">
+              <datalist id="warnaList"><option value="Abu-abu"></option><option value="Merah"></option><option value="Hijau Tosca"></option></datalist></div>
+            <div><label>Down Payment / DP (Rp)</label><input type="number" id="f_dp" min="0" step="1000" value="0"></div>
+            <div><label>Diskon (Rp)</label><input type="number" id="f_discount" min="0" step="1000" value="0"></div>
+            <div><label>Tipe</label><input type="text" id="f_vehicle_type"></div>
+            <div><label>Cara Pembayaran</label><input type="text" id="f_payment_method" list="bayarList" placeholder="Tunai / Kredit">
+              <datalist id="bayarList"><option value="Tunai"></option><option value="Kredit"></option></datalist></div>
+            <div><label>Aksesoris</label><input type="text" id="f_accessories" value="Helm"></div>
+            <div><label>Keterangan</label><input type="text" id="f_notes"></div>
+          </div>
+          <p class="kecil-teks" id="sisaInfo"></p>
+        </div>
+
+        <div class="kartu">
+          <h2>Tanda Terima Uang Jaminan</h2>
+          <div class="grid">
+            <div><label>Cara</label>
+              <select id="f_deposit_method"><option value="">—</option><option value="transfer">Transfer</option><option value="tunai">Tunai</option></select></div>
+            <div><label>Tanggal</label><input type="date" id="f_deposit_date"></div>
+            <div><label>Jumlah (Rp)</label><input type="number" id="f_deposit_amount" min="0" step="1000" value="0"></div>
+          </div>
+        </div>
+
+        <div class="kartu">
+          <h2>Dokumen Pembeli</h2>
+          <p class="kecil-teks">Foto KTP wajib. Foto dikompres otomatis sebelum diunggah. Dokumen tersimpan privat — hanya Anda dan pemilik yang bisa membukanya.</p>
+          <div class="grid">
+            <div><label>Foto KTP *</label><input type="file" id="f_doc_ktp" accept="image/*"><div class="kecil-teks" id="ada_ktp"></div></div>
+            <div><label>Foto NPWP</label><input type="file" id="f_doc_npwp" accept="image/*"><div class="kecil-teks" id="ada_npwp"></div></div>
+            <div><label>Foto KK</label><input type="file" id="f_doc_kk" accept="image/*"><div class="kecil-teks" id="ada_kk"></div></div>
+          </div>
+        </div>
+
+        <div class="baris-aksi">
+          <button type="submit" class="btn hijau" id="simpanBtn">Simpan SPK</button>
+          <button type="button" class="btn abu" id="batalBtn">Batal</button>
+          <span class="kecil-teks" id="simpanInfo"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===== USERS (owner) ===== -->
+    <section id="view-users" class="sembunyi">
+      <div class="kartu">
+        <h2>Tambah Pegawai</h2>
+        <div class="grid">
+          <div><label>Nama lengkap</label><input type="text" id="u_name"></div>
+          <div><label>Email login</label><input type="email" id="u_email"></div>
+          <div><label>Kata sandi sementara</label><input type="text" id="u_pass"></div>
+        </div>
+        <div class="baris-aksi"><button class="btn" id="u_add">Buat Akun</button><span class="kecil-teks">Sampaikan email + kata sandi sementara ini langsung ke pegawai yang bersangkutan.</span></div>
+      </div>
+      <div class="kartu">
+        <h2>Semua Pengguna</h2>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>Nama</th><th>Email</th><th>Peran</th><th>Status</th><th></th></tr></thead>
+          <tbody id="userBody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== PRODUCTS (owner) ===== -->
+    <section id="view-products" class="sembunyi">
+      <div class="kartu">
+        <h2>Tambah Produk</h2>
+        <div class="grid">
+          <div><label>Nama produk</label><input type="text" id="p_name"></div>
+          <div><label>Harga jual (Rp)</label><input type="number" id="p_price" min="0" step="1000"></div>
+        </div>
+        <div class="baris-aksi"><button class="btn" id="p_add">Tambah</button></div>
+      </div>
+      <div class="kartu">
+        <h2>Daftar Harga Master</h2>
+        <p class="kecil-teks">Harga di sini dipakai formulir SPK. Mengubah harga di sini tidak mengubah halaman Simulasi Kredit.</p>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>Produk</th><th>Harga (Rp)</th><th>Aktif</th><th></th></tr></thead>
+          <tbody id="prodBody"></tbody>
+        </table></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<dialog id="docDialog">
+  <h3 style="margin-top:0">Dokumen Pembeli</h3>
+  <div id="docLinks" class="kecil-teks">Memuat…</div>
+  <div class="baris-aksi"><button class="btn abu" onclick="document.getElementById('docDialog').close()">Tutup</button></div>
+</dialog>
+
+<div id="printArea"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = "https://qwtouqqojoldnjmfgqds.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3dG91cXFvam9sZG5qbWZncWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU3ODg3NDcsImV4cCI6MjExMTM2NDc0N30.irG4aLH-IrmQpXjhIlE2TkQLpe_P--vJxmIbwAptEqI";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const $ = id => document.getElementById(id);
+const rp = n => "Rp " + Number(n||0).toLocaleString("id-ID");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+let me = null;            // my profile row
+let products = [];        // active products
+let allProducts = [];     // owner product admin
+let spkRows = [];         // loaded SPK rows
+let profilesMap = {};     // id -> profile (owner)
+let editingId = null;     // spk id being edited
+let editingDocs = {};     // existing doc paths when editing
+
+function msg(el, text, ok){
+  el.className = "pesan " + (ok ? "ok" : "err");
+  el.textContent = text;
+  if(!text) el.className = "pesan";
+}
+function appMsg(text, ok){ msg($("appMsg"), text, ok); if(text) window.scrollTo({top:0, behavior:"smooth"}); }
+
+/* ---------------- auth ---------------- */
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("loginBtn").disabled = true;
+  msg($("loginMsg"), "");
+  const { error } = await sb.auth.signInWithPassword({ email: $("li_email").value.trim(), password: $("li_pass").value });
+  $("loginBtn").disabled = false;
+  if(error){ msg($("loginMsg"), "Login gagal: " + error.message); return; }
+  await boot();
+});
+$("logoutBtn").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+
+async function boot(){
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user){ $("loginView").classList.remove("sembunyi"); $("appView").classList.add("sembunyi"); return; }
+  const { data: prof, error } = await sb.from("profiles").select("*").eq("id", user.id).single();
+  if(error || !prof){ msg($("loginMsg"), "Profil pengguna tidak ditemukan. Hubungi pemilik."); await sb.auth.signOut(); return; }
+  if(!prof.is_active){ msg($("loginMsg"), "Akun ini sudah dinonaktifkan. Hubungi pemilik."); await sb.auth.signOut(); return; }
+  me = prof;
+  $("loginView").classList.add("sembunyi");
+  $("appView").classList.remove("sembunyi");
+  $("siapaNama").textContent = prof.full_name || prof.email;
+  $("siapaRole").textContent = prof.role === "owner" ? "Pemilik" : "Pegawai";
+  if(prof.role === "owner"){
+    $("tabUsers").classList.remove("sembunyi");
+    $("tabProducts").classList.remove("sembunyi");
+    const { data: profs } = await sb.from("profiles").select("*");
+    (profs||[]).forEach(p => profilesMap[p.id] = p);
+  } else {
+    $("thOleh").style.display = "none";
+  }
+  await loadProducts();
+  await loadSpk();
+  showTab("list");
+}
+
+/* ---------------- tabs ---------------- */
+function showTab(name){
+  ["list","form","users","products"].forEach(t => $("view-"+t).classList.toggle("sembunyi", t !== name));
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("aktif", b.dataset.tab === name));
+  if(name === "users") loadUsers();
+  if(name === "products") loadProductsAdmin();
+}
+document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", () => {
+  if(b.dataset.tab === "form") newSpk();
+  showTab(b.dataset.tab);
+}));
+$("baruBtn").addEventListener("click", () => { newSpk(); showTab("form"); });
+$("batalBtn").addEventListener("click", () => showTab("list"));
+
+/* ---------------- products ---------------- */
+async function loadProducts(){
+  const { data } = await sb.from("products").select("*").eq("is_active", true).order("sort_order");
+  products = data || [];
+  const sel = $("f_product");
+  sel.innerHTML = "";
+  products.forEach(p => { const o = document.createElement("option"); o.value = p.id; o.textContent = p.name + " — " + rp(p.price); sel.appendChild(o); });
+  const o2 = document.createElement("option"); o2.value = ""; o2.textContent = "Lainnya (isi manual)"; sel.appendChild(o2);
+  syncProduct();
+}
+$("f_product").addEventListener("change", syncProduct);
+function syncProduct(){
+  const p = products.find(x => String(x.id) === $("f_product").value);
+  if(p){ $("f_model_name").value = p.name; $("f_price").value = p.price; }
+  hitungSisa();
+}
+["f_price","f_dp","f_discount"].forEach(id => $(id).addEventListener("input", hitungSisa));
+function hitungSisa(){
+  const sisa = Number($("f_price").value||0) - Number($("f_dp").value||0) - Number($("f_discount").value||0);
+  $("sisaInfo").textContent = "Sisa pembayaran: " + rp(sisa);
+}
+
+/* ---------------- SPK list ---------------- */
+async function loadSpk(){
+  const { data, error } = await sb.from("spk").select("*").order("created_at", { ascending:false });
+  if(error){ appMsg("Gagal memuat SPK: " + error.message); return; }
+  spkRows = data || [];
+  renderSpk();
+}
+function olehNama(id){
+  if(me.role !== "owner") return "";
+  const p = profilesMap[id];
+  return p ? esc(p.full_name || p.email) : "";
+}
+function renderSpk(){
+  const q = $("cari").value.trim().toLowerCase();
+  const rows = spkRows.filter(r => !q || (r.spk_no+" "+r.buyer_name+" "+r.model_name).toLowerCase().includes(q));
+  const tb = $("spkBody");
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="7" class="kecil-teks">Belum ada SPK.</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr>
+    <td><strong>${esc(r.spk_no)}</strong></td>
+    <td>${esc(r.spk_date)}</td>
+    <td>${esc(r.buyer_name)}<br><span class="kecil-teks">${esc(r.buyer_hp||"")}</span></td>
+    <td>${esc(r.model_name)}</td>
+    <td>${rp(r.price)}</td>
+    ${me.role === "owner" ? `<td>${olehNama(r.created_by)}</td>` : ""}
+    <td style="white-space:nowrap">
+      <button class="btn abu kecil" onclick="printSpk('${r.id}')">Print</button>
+      <button class="btn abu kecil" onclick="editSpk('${r.id}')">Ubah</button>
+      <button class="btn abu kecil" onclick="lihatDok('${r.id}')">Dokumen</button>
+    </td></tr>`).join("");
+}
+$("cari").addEventListener("input", renderSpk);
+
+$("csvBtn").addEventListener("click", () => {
+  if(me.role !== "owner"){ appMsg("Ekspor CSV hanya untuk pemilik."); return; }
+  const head = ["No SPK","Tanggal","Pemesan","No HP","Model","Harga","DP","Diskon","Sisa","Cara Pembayaran","Sales PIC","Dibuat Oleh","Dibuat Pada"];
+  const lines = [head.join(";")];
+  spkRows.forEach(r => lines.push([r.spk_no, r.spk_date, r.buyer_name, r.buyer_hp||"", r.model_name, r.price, r.dp, r.discount, (r.price-r.dp-r.discount), r.payment_method||"", r.sales_pic||"", (profilesMap[r.created_by] ? (profilesMap[r.created_by].full_name||profilesMap[r.created_by].email) : ""), r.created_at].map(v => `"${String(v??"").replace(/"/g,'""')}"`).join(";")));
+  const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type:"text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "spk-arodian.csv"; a.click(); URL.revokeObjectURL(a.href);
+});
+
+/* ---------------- form ---------------- */
+const FIELDS = ["spk_date","sales_pic","sales_manager","store_name","store_phone","store_address",
+  "buyer_name","buyer_ktp","buyer_address","buyer_province","buyer_city","buyer_district","buyer_village","buyer_postal","buyer_hp","buyer_phone","buyer_email",
+  "invoice_name","invoice_ktp","invoice_address","invoice_province","invoice_city","invoice_district","invoice_village","invoice_postal","invoice_hp","invoice_phone","invoice_email",
+  "model_name","price","color","dp","discount","vehicle_type","notes","payment_method","accessories",
+  "deposit_method","deposit_date","deposit_amount"];
+function newSpk(){
+  editingId = null; editingDocs = {};
+  $("spkForm").reset();
+  $("formJudul").textContent = "SPK Baru";
+  $("f_spk_date").value = new Date().toISOString().slice(0,10);
+  $("f_store_name").value = "Arodian Molis Indramayu";
+  $("f_store_phone").value = "0819-1977-7398";
+  $("f_store_address").value = "Jl. Raya Trisi, Blok Karang Turi RT.02/RW.07, Kel. Rajasinga, Kec. Trisi - Indramayu 45262";
+  $("f_accessories").value = "Helm";
+  $("f_same").checked = true; toggleFaktur();
+  ["ktp","npwp","kk"].forEach(k => $("ada_"+k).textContent = "");
+  syncProduct();
+}
+function editSpk(id){
+  const r = spkRows.find(x => x.id === id); if(!r) return;
+  editingId = id; editingDocs = { ktp: r.ktp_path, npwp: r.npwp_path, kk: r.kk_path };
+  $("formJudul").textContent = "Ubah " + r.spk_no;
+  FIELDS.forEach(f => { const el = $("f_"+f); if(el) el.value = r[f] ?? ""; });
+  $("f_product").value = r.product_id ? String(r.product_id) : "";
+  $("f_same").checked = !!r.invoice_same_as_buyer; toggleFaktur();
+  ["ktp","npwp","kk"].forEach(k => $("ada_"+k).textContent = editingDocs[k] ? "Sudah ada — pilih file baru hanya bila ingin mengganti." : "");
+  hitungSisa();
+  showTab("form");
+}
+$("f_same").addEventListener("change", toggleFaktur);
+function toggleFaktur(){ $("fakturKartu").style.opacity = $("f_same").checked ? .45 : 1; }
+
+async function kompresFoto(file){
+  if(!file.type.startsWith("image/")) return file;
+  const url = URL.createObjectURL(file);
+  try{
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const maxSisi = 1200, skala = Math.min(1, maxSisi / Math.max(img.width, img.height));
+    const cv = document.createElement("canvas");
+    cv.width = Math.round(img.width * skala); cv.height = Math.round(img.height * skala);
+    cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+    const blob = await new Promise(res => cv.toBlob(res, "image/jpeg", 0.72));
+    return blob || file;
+  } finally { URL.revokeObjectURL(url); }
+}
+
+$("spkForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  appMsg("");
+  const btn = $("simpanBtn"); btn.disabled = true; $("simpanInfo").textContent = "Menyimpan…";
+  try{
+    const row = {};
+    FIELDS.forEach(f => { let v = $("f_"+f).value; if(["price","dp","discount","deposit_amount"].includes(f)) v = Number(v||0); row[f] = v === "" ? null : v; });
+    row.invoice_same_as_buyer = $("f_same").checked;
+    if(row.invoice_same_as_buyer){
+      ["name","ktp","address","province","city","district","village","postal","hp","phone","email"].forEach(k => row["invoice_"+k] = row["buyer_"+k]);
+    }
+    row.product_id = $("f_product").value ? Number($("f_product").value) : null;
+    let id = editingId;
+    if(!id){
+      if(!$("f_doc_ktp").files.length) throw new Error("Foto KTP wajib dilampirkan.");
+      id = crypto.randomUUID();
+      const { data: no, error: noErr } = await sb.rpc("next_spk_no");
+      if(noErr) throw new Error("Gagal membuat nomor SPK: " + noErr.message);
+      row.id = id; row.spk_no = no; row.created_by = me.id;
+      const { error } = await sb.from("spk").insert(row);
+      if(error) throw new Error("Gagal menyimpan SPK: " + error.message);
+    } else {
+      const { error } = await sb.from("spk").update(row).eq("id", id);
+      if(error) throw new Error("Gagal mengubah SPK: " + error.message);
+    }
+    // documents
+    const paths = {};
+    for(const k of ["ktp","npwp","kk"]){
+      const file = $("f_doc_"+k).files[0];
+      if(file){
+        $("simpanInfo").textContent = "Mengunggah dokumen " + k.toUpperCase() + "…";
+        const blob = await kompresFoto(file);
+        const path = id + "/" + k + ".jpg";
+        const { error: upErr } = await sb.storage.from("spk-documents").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+        if(upErr) throw new Error("SPK tersimpan, tetapi unggah " + k.toUpperCase() + " gagal: " + upErr.message + " — buka Ubah untuk mencoba lagi.");
+        paths[k+"_path"] = path;
+      }
+    }
+    if(Object.keys(paths).length){
+      const { error } = await sb.from("spk").update(paths).eq("id", id);
+      if(error) throw new Error("SPK tersimpan, tetapi pencatatan dokumen gagal: " + error.message);
+    }
+    appMsg("SPK tersimpan" + (row.spk_no ? " dengan nomor " + row.spk_no : "") + ".", true);
+    await loadSpk();
+    showTab("list");
+  }catch(err){
+    appMsg(err.message || String(err));
+  }finally{
+    btn.disabled = false; $("simpanInfo").textContent = "";
+  }
+});
+
+/* ---------------- documents viewer ---------------- */
+async function lihatDok(id){
+  const r = spkRows.find(x => x.id === id); if(!r) return;
+  const dlg = $("docDialog"); $("docLinks").textContent = "Memuat…"; dlg.showModal();
+  const items = [["KTP", r.ktp_path], ["NPWP", r.npwp_path], ["KK", r.kk_path]];
+  const out = [];
+  for(const [label, path] of items){
+    if(!path){ out.push(label + ": belum ada"); continue; }
+    const { data, error } = await sb.storage.from("spk-documents").createSignedUrl(path, 300);
+    out.push(error ? label + ": gagal dibuka" : `<a href="${data.signedUrl}" target="_blank" rel="noopener">Lihat ${label}</a>`);
+  }
+  $("docLinks").innerHTML = out.join("<br>");
+}
+
+/* ---------------- users admin ---------------- */
+async function adminApi(payload){
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch("/api/admin", { method:"POST", headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + session.access_token }, body: JSON.stringify(payload) });
+  const json = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+  return json;
+}
+async function loadUsers(){
+  const { data, error } = await sb.from("profiles").select("*").order("created_at");
+  if(error){ appMsg("Gagal memuat pengguna: " + error.message); return; }
+  (data||[]).forEach(p => profilesMap[p.id] = p);
+  $("userBody").innerHTML = (data||[]).map(p => `<tr>
+    <td>${esc(p.full_name||"")}</td><td>${esc(p.email)}</td>
+    <td>${p.role === "owner" ? '<span class="badge owner">Pemilik</span>' : "Pegawai"}</td>
+    <td>${p.is_active ? '<span class="badge on">Aktif</span>' : '<span class="badge off">Nonaktif</span>'}</td>
+    <td style="white-space:nowrap">
+      ${p.id !== me.id ? `<button class="btn abu kecil" onclick="toggleAktif('${p.id}', ${!p.is_active})">${p.is_active ? "Nonaktifkan" : "Aktifkan"}</button>
+      <button class="btn abu kecil" onclick="resetPass('${p.id}')">Reset Sandi</button>` : '<span class="kecil-teks">Anda</span>'}
+    </td></tr>`).join("");
+}
+async function toggleAktif(id, aktif){
+  const { error } = await sb.from("profiles").update({ is_active: aktif }).eq("id", id);
+  if(error){ appMsg("Gagal: " + error.message); return; }
+  appMsg(aktif ? "Akun diaktifkan." : "Akun dinonaktifkan — aksesnya langsung berhenti.", true);
+  loadUsers();
+}
+async function resetPass(id){
+  const p = profilesMap[id];
+  const pw = prompt("Kata sandi baru untuk " + (p ? p.email : id) + " (minimal 8 karakter):");
+  if(!pw) return;
+  try{ await adminApi({ action:"reset_password", user_id:id, password:pw }); appMsg("Kata sandi berhasil direset. Sampaikan langsung ke orangnya.", true); }
+  catch(e){ appMsg("Reset gagal: " + e.message); }
+}
+$("u_add").addEventListener("click", async () => {
+  const name = $("u_name").value.trim(), email = $("u_email").value.trim(), pass = $("u_pass").value;
+  if(!email || !pass){ appMsg("Email dan kata sandi sementara wajib diisi."); return; }
+  try{
+    await adminApi({ action:"create_user", email, password: pass, full_name: name });
+    appMsg("Akun " + email + " dibuat. Sampaikan kata sandi sementaranya langsung ke pegawai.", true);
+    $("u_name").value = $("u_email").value = $("u_pass").value = "";
+    const { data: profs } = await sb.from("profiles").select("*");
+    (profs||[]).forEach(p => profilesMap[p.id] = p);
+    loadUsers();
+  }catch(e){ appMsg("Buat akun gagal: " + e.message); }
+});
+
+/* ---------------- products admin ---------------- */
+async function loadProductsAdmin(){
+  const { data, error } = await sb.from("products").select("*").order("sort_order");
+  if(error){ appMsg("Gagal memuat produk: " + error.message); return; }
+  allProducts = data || [];
+  $("prodBody").innerHTML = allProducts.map(p => `<tr>
+    <td>${esc(p.name)}</td>
+    <td><input type="number" min="0" step="1000" value="${p.price}" id="pp_${p.id}" style="max-width:170px"></td>
+    <td>${p.is_active ? '<span class="badge on">Aktif</span>' : '<span class="badge off">Nonaktif</span>'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn abu kecil" onclick="simpanHarga(${p.id})">Simpan</button>
+      <button class="btn abu kecil" onclick="toggleProduk(${p.id}, ${!p.is_active})">${p.is_active ? "Nonaktifkan" : "Aktifkan"}</button>
+    </td></tr>`).join("");
+}
+async function simpanHarga(id){
+  const v = Number($("pp_"+id).value||0);
+  const { error } = await sb.from("products").update({ price: v }).eq("id", id);
+  if(error){ appMsg("Gagal: " + error.message); return; }
+  appMsg("Harga diperbarui.", true); loadProducts();
+}
+async function toggleProduk(id, aktif){
+  const { error } = await sb.from("products").update({ is_active: aktif }).eq("id", id);
+  if(error){ appMsg("Gagal: " + error.message); return; }
+  loadProductsAdmin(); loadProducts();
+}
+$("p_add").addEventListener("click", async () => {
+  const name = $("p_name").value.trim(), price = Number($("p_price").value||0);
+  if(!name){ appMsg("Nama produk wajib diisi."); return; }
+  const { error } = await sb.from("products").insert({ name, price, sort_order: (allProducts.length||0) + 1 });
+  if(error){ appMsg("Gagal: " + error.message); return; }
+  $("p_name").value = $("p_price").value = "";
+  appMsg("Produk ditambahkan.", true); loadProductsAdmin(); loadProducts();
+});
+
+/* ---------------- print ---------------- */
+const CATATAN = [
+  "Surat ini adalah Surat Pemesanan Kendaraan (SPK) yang memuat tentang syarat dan ketentuan pemesanan pembelian Motor Arodian Molis Indonesia antara Toko dan pemesan.",
+  "Harga yang tercantum dalam SPK ini TIDAK MENGIKAT. Apabila terjadi perubahan harga dikarenakan kebijakan pemerintah (PPn, Pajak Progresif dan lainnya), maka toko akan menginformasikan terlebih dahulu kepada Pemesan.",
+  "Segala bentuk pembayaran WAJIB dibayarkan melalui Dealer, dan/atau ditujukan kepada rekening dengan Atas Nama Toko.",
+  "Toko tidak bertanggung jawab atas segala tuntutan jika pemesan melakukan pembayaran tidak dengan atas nama Toko."
+];
+const SK = [
+  "Surat ini adalah Surat Pemesanan Kendaraan (SPK) yang memuat tentang syarat dan ketentuan Pemesanan Pembelian Motor Arodian Molis Indonesia antara Toko Arodian Molis Indonesia dengan Pemesan/Customer.",
+  "Setelah SPK ini ditandatangani Pemesan/Customer akan mendapatkan Pesan melalui WA/E-MAIL/SMS sebagai konfirmasi Dari Toko Arodian Molis yang akan dikirimkan ke nomor telepon genggam yang didaftarkan Pemesan/Pembeli dalam SPK ini.",
+  "Harga yang tercantum dalam SPK ini TIDAK MENGIKAT. Apabila terjadi perubahan harga dikarenakan kebijakan pemerintah (PPn, Pajak Progresif dan Lainnya) pemesan harus mengikuti peraturan yang berlaku.",
+  "Pembayaran Uang Tanda Jadi dan Pelunasan di transfer ke Rekening Perusahaan. BANK BCA Nomor Rekening : 256-075-0555 A/n Arodian Molis Indonesia.",
+  "Surat Pesanan Kendaraan bukan merupakan tanda terima pembayaran.",
+  "Tanda terima pembayaran yang sah akan dikeluarkan oleh Arodian Molis Indonesia apabila uang telah masuk ke rekening Tertera ber atas namakan Arodian Molis Indonesia.",
+  "SPK dinyatakan sah apabila sudah di tandatangani oleh Pemesan dan disetujui oleh Sales Manager dan Kepala Toko.",
+  "Tanda jadi berlaku 3 (tiga) bulan sejak tanggal pemesanan, apabila pembelian tidak terealisasi oleh sebab apapun (kecuali indent) melebihi dari waktu tersebut, maka uang tanda jadi yang telah dibayar pemesan dianggap hangus.",
+  "Apabila pesanan dibatalkan sepihak oleh Pemesan (Customer), maka uang tanda jadi yang telah dibayarkan kepada Toko akan sepenuhnya menjadi milik Toko Arodian Molis Indonesia.",
+  "Dealer dapat melakukan pembatalan SPK, apabila kendaraan tersebut tidak tersedia atau tidak di setujui dari pihak leasing dinyatakan Riject dengan syarat melampirkan surat keterangan Riject dari Leasing yang bersangkutan dan uang tanda jadi yang telah di setor akan di kembalikan sepenuhnya setelah dikurangi PPn sebesar 10% kepada rekening asal dana di transfer oleh pembeli/customer/pemesan.",
+  "Estimasi waktu pengiriman Kendaraan kepada pemesan adalah selama 3 (tiga) hari setelah pembayaran LUNAS yang dilakukan oleh pemesan dan atau telah aktif di rekening Toko Arodian Molis Indonesia.",
+  "Setiap risiko yang timbul akibat keterlambatan permintaan pembukuan, faktur dan atau biaya tambahan karena adanya perubahan peraturan pemerintah dll akan menjadi tanggung jawab pemesan.",
+  "SPK ini harus di kembalikan kepada Dealer pada saat Serah Terima atau DO.",
+  "Kendaraan yang sudah di beli / di pakai tidak dapat di kembalikan / di batalkan.",
+  "Setiap pembelian melalui leasing yang tidak bekerjasama dengan Arodian Molis Indonesia, maka diberlakukan denda Keterlambatan pelunasan kepada pembeli/customer/pemesan.",
+  "Toko Arodian Molis Indonesia tidak bertanggung jawab dan akan di lepas dari gugatan maupun tuntutan hukum apapun apabila Pemesan/Pembeli/Customer tidak melaksanakan syarat dan ketentuan di atas."
+];
+const PRIVASI = [
+  "Selamat datang di Arodian Molis Indonesia. Kebijakan atas pengelolaan Data Pribadi pada sistem ini tunduk pada Kebijakan Privasi yang diatur secara spesifik pada Kebijakan Privasi Spesifik ini.",
+  "Kami akan melakukan perolehan, pengumpulan, penggunaan, pengelolaan, penganalisaan, penyimpanan, transfer, pengumuman, pengungkapan, penghapusan, pemusnahan dan perlindungan, selanjutnya disebut Pemrosesan atas data pribadi Anda selaku pelanggan Arodian Molis Indonesia (selanjutnya disebut \"Anda\") yang Anda berikan kepada Kami untuk tujuan sebagai berikut: (i) Untuk kebutuhan penyediaan produk dan layanan, menjawab pertanyaan dan atau permintaan dan atau menghubungi dan/atau menginformasikan kepada Anda terkait produk dan layanan perbaikan dan lainnya (selanjutnya disebut \"Produk dan Layanan\"); (ii) Survei, riset, pengembangan dan peningkatan Produk dan Layanan Kami (selanjutnya disebut \"Survei dan Riset\"); (iii) Aktivitas promosi Produk dan Layanan, keselamatan berkendara dan aktivitas sosial lainnya (selanjutnya disebut \"Aktivitas Pendukung\"); (iv) Verifikasi kebenaran data yang Anda sampaikan.",
+  "Sehubungan dengan tujuan yang telah Kami sampaikan di atas, berikut jenis dan rincian data pribadi yang kami butuhkan untuk menunjang pelaksanaan dari tujuan tersebut: (i) Identitas KTP & Kartu Keluarga; (ii) No. telepon dan/atau No.HP.",
+  "Kami akan melakukan pemrosesan Data Pribadi Anda termasuk penyimpanan dalam jangka waktu yang dibutuhkan untuk memenuhi tujuan penggunaan yang dijelaskan dalam Kebijakan Privasi, mematuhi hukum dan peraturan yang berlaku.",
+  "Anda dengan ini memberikan persetujuan kepada kami untuk melakukan Pemrosesan Data Pribadi Anda, untuk keperluan dan tujuan yang telah disampaikan pada poin sebelumnya, termasuk memberikan izin kami untuk bekerja sama dengan pihak ketiga lainnya untuk memenuhi tujuan tersebut.",
+  "Pemilik Data Pribadi dengan ini menyatakan bahwa pemberian Data Pribadi bersifat sukarela dan dapat dipertanggungjawabkan. Oleh karenanya Pemilik Data Pribadi bersedia bertanggung jawab atas semua informasi yang disampaikan. Lebih jauh, apabila Pemilik Data Pribadi memahami apabila Data Pribadi tidak diberikan dengan benar, maka Pemilik Data Pribadi dimungkinkan tidak dapat menerima layanan kami dengan sebagaimana mestinya. Kami tidak bertanggung jawab dan dibebaskan dari segala tuntutan dan/atau tuntutan hukum yang timbul atas setiap data yang Anda berikan.",
+  "Cara Menghubungi Kami — Jika Anda memiliki pertanyaan berkenaan dengan kebijakan Privasi, Anda dapat menghubungi kontak di bawah ini: PT Arodian Molis Indonesia."
+];
+function barisData(pairs){
+  return "<table>" + pairs.map(([k,v]) => `<tr><th style="width:170px;text-transform:none;letter-spacing:0;color:#000;font-size:12px">${esc(k)}</th><td>${esc(v||"")}</td></tr>`).join("") + "</table>";
+}
+function printSpk(id){
+  const r = spkRows.find(x => x.id === id); if(!r) return;
+  const kepala = `<div style="text-align:right;font-size:12px">No. SPK : <strong>${esc(r.spk_no)}</strong><br>Tanggal : ${esc(r.spk_date)}<br>Sales PIC : ${esc(r.sales_pic||"")}<br>Sales Manager : ${esc(r.sales_manager||"")}</div>`;
+  const pemesan = [["Nama", r.buyer_name],["No. KTP", r.buyer_ktp],["Alamat", r.buyer_address],["Provinsi", r.buyer_province],["Kota/Kabupaten", r.buyer_city],["Kecamatan", r.buyer_district],["Kelurahan", r.buyer_village],["Kode Pos", r.buyer_postal],["No. HP", r.buyer_hp],["No. Telpon", r.buyer_phone],["Email", r.buyer_email]];
+  const faktur = [["Nama", r.invoice_name],["No. KTP", r.invoice_ktp],["Alamat", r.invoice_address],["Provinsi", r.invoice_province],["Kota/Kabupaten", r.invoice_city],["Kecamatan", r.invoice_district],["Kelurahan", r.invoice_village],["Kode Pos", r.invoice_postal],["No. HP", r.invoice_hp],["No. Telpon", r.invoice_phone],["Email", r.invoice_email]];
+  const kendaraan = [["Model", r.model_name],["Harga", rp(r.price)],["Warna", r.color],["Down Payment", rp(r.dp)],["Diskon", rp(r.discount)],["Tipe", r.vehicle_type],["Keterangan", r.notes],["Cara Pembayaran", r.payment_method],["Aksesoris", r.accessories]];
+  const jaminan = r.deposit_method ? `<p><strong>Tanda Terima Uang Jaminan</strong> — ${r.deposit_method === "transfer" ? "Transfer" : "Tunai"}, Tanggal : ${esc(r.deposit_date||"")}, Jumlah : ${rp(r.deposit_amount)}</p>` : "";
+  $("printArea").innerHTML = `
+  <div class="halaman">
+    <h2 style="text-align:center;margin:0">SURAT PEMESANAN KENDARAAN</h2>
+    ${kepala}
+    <p>Nama Toko : ${esc(r.store_name)}<br>No. Telepon Toko : ${esc(r.store_phone)}<br>Alamat Toko : ${esc(r.store_address)}</p>
+    <h3>DATA PEMESAN KENDARAAN</h3>${barisData(pemesan)}
+    <h3>DATA FAKTUR</h3>${barisData(faktur)}
+    <h3>DATA KENDARAAN</h3>${barisData(kendaraan)}
+    ${jaminan}
+    <h3>Catatan Umum</h3>
+    <ol>${CATATAN.map(c => `<li>${esc(c)}</li>`).join("")}</ol>
+    <table style="margin-top:26px"><tr>
+      <td style="border:0;height:80px;vertical-align:bottom">Paraf Customer<br><br><br>( ______________ )</td>
+      <td style="border:0;height:80px;vertical-align:bottom">Toko<br><br><br>( ______________ )</td>
+    </tr></table>
+    <p style="text-align:right" class="kecil-teks">Halaman: 1 dari 3</p>
+  </div>
+  <div class="halaman">
+    <h2 style="text-align:center;margin:0">SYARAT DAN KETENTUAN</h2>
+    <div style="text-align:right;font-size:12px">No. SPK : <strong>${esc(r.spk_no)}</strong><br>Tanggal : ${esc(r.spk_date)}</div>
+    <ol>${SK.map(c => `<li style="margin-bottom:6px">${esc(c)}</li>`).join("")}</ol>
+    <p style="text-align:right" class="kecil-teks">Halaman: 2 dari 3</p>
+  </div>
+  <div class="halaman">
+    <h2 style="text-align:center;margin:0">KEBIJAKAN PRIVASI</h2>
+    <div style="text-align:right;font-size:12px">No. SPK : <strong>${esc(r.spk_no)}</strong><br>Tanggal : ${esc(r.spk_date)}</div>
+    <ol>${PRIVASI.map(c => `<li style="margin-bottom:6px">${esc(c)}</li>`).join("")}</ol>
+    <table style="margin-top:30px"><tr>
+      <td style="border:0;height:90px;vertical-align:bottom">Pelanggan<br><br><br>( ______________ )</td>
+      <td style="border:0;height:90px;vertical-align:bottom">Hormat Kami<br><br><br>( ______________ )</td>
+      <td style="border:0;height:90px;vertical-align:bottom">Sales PIC<br><br><br>( ______________ )</td>
+      <td style="border:0;height:90px;vertical-align:bottom">Manager<br><br><br>( ______________ )</td>
+    </tr></table>
+    <p style="text-align:right" class="kecil-teks">Halaman: 3 dari 3</p>
+  </div>`;
+  window.print();
+}
+
+/* ---------------- start ---------------- */
+boot();
+</script>
+</body>
+</html>
