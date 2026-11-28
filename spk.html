@@ -475,19 +475,25 @@ async function gambarOCR(file){
   const url = URL.createObjectURL(file);
   try{
     const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
-    const maxSisi = 1800, skala = Math.min(1, maxSisi / Math.max(img.width, img.height));
+    // Terukur pada foto KTP asli: gambar asli (berwarna, tanpa filter) terbaca paling baik oleh OCR;
+    // grayscale/kontras/JPEG kualitas rendah justru merusak bacaan. Foto kecil diteruskan apa adanya,
+    // foto besar hanya diperkecil ke maks 2400px, tetap berwarna, kualitas tinggi.
+    const maxSisi = 2400, skala = Math.min(1, maxSisi / Math.max(img.width, img.height));
+    if(skala >= 1) return file;
     const cv = document.createElement("canvas");
     cv.width = Math.round(img.width * skala); cv.height = Math.round(img.height * skala);
     const ctx = cv.getContext("2d");
-    try{ ctx.filter = "grayscale(1) contrast(1.15)"; }catch(e){}
     ctx.drawImage(img, 0, 0, cv.width, cv.height);
-    const blob = await new Promise(res => cv.toBlob(res, "image/jpeg", 0.9));
+    const blob = await new Promise(res => cv.toBlob(res, "image/jpeg", 0.95));
     return blob || file;
   }catch(e){ return file; }
   finally { URL.revokeObjectURL(url); }
 }
 function bersihNilai(v){
-  return (v || "").replace(/\s+/g, " ").replace(/^[:.\-\s]+/, "").replace(/[:.\s]+$/, "").trim();
+  return (v || "").replace(/\s+/g, " ")
+    .replace(/^[\s:.\-—–"'“”‘’`~|•·()\[\]]+/, "")
+    .replace(/[\s:.\-—–"'“”‘’`~|•·()\[\]?!£$%^*]+$/, "")
+    .trim();
 }
 function ambilLabel(lines, re){
   for(const ln of lines){ const m = ln.match(re); if(m) return bersihNilai(m[1]); }
@@ -496,17 +502,22 @@ function ambilLabel(lines, re){
 function parseKTP(teks){
   const lines = teks.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
   const hasil = {};
-  let nik = ambilLabel(lines, /^NIK\s*[:.]?\s*(.+)$/i).replace(/\D/g, "");
-  if(nik.length < 16){
-    const rapat = teks.replace(/\D/g, " ").split(/\s+/).join("");
-    const m = rapat.match(/\d{16}/);
-    if(m) nik = m[0];
-  }
-  if(nik.length >= 16) hasil.buyer_ktp = nik.slice(0, 16);
-  const nama = ambilLabel(lines, /^Nama\s*[:.]?\s*(.+)$/i);
+  const normAngka = s => (s || "").replace(/O/g, "0").replace(/[lI]/g, "1");
+  // NIK: utamakan baris NIK itu sendiri. Menebak dari gabungan semua angka di kartu berbahaya:
+  // tanggal lahir & tanggal terbit ikut tercampur dan menghasilkan NIK 16 digit yang salah.
+  let nik = "";
+  const barisNik = lines.find(l => /^NIK\b/i.test(l));
+  if(barisNik) nik = normAngka(barisNik.replace(/^NIK\b/i, "")).replace(/\D/g, "");
+  if(nik.length > 16) nik = nik.slice(0, 16);
+  // Tanpa tebakan dari gabungan angka: NIK yang direka dari tanggal-tanggal di kartu bisa tampak sah tapi salah.
+  // Kalau baris NIK tidak terbaca cukup, kolom dikosongkan agar diisi manual.
+  if(nik.length >= 15) hasil.buyer_ktp = nik;
+  let nama = ambilLabel(lines, /^Nama\s*[:.]?\s*(.+)$/i);
+  if(nama) nama = nama.replace(/\s+[A-Za-z]$/, "").trim();
   if(nama) hasil.buyer_name = nama;
-  const rtrw = teks.match(/RT\s*\/?\s*RW\s*[:.]?\s*(\d{1,3})\s*\/\s*(\d{1,3})/i)
-    || teks.match(/RT\s*[:.]?\s*(\d{1,3})\s*\/\s*RW\s*[:.]?\s*(\d{1,3})/i);
+  const teksNorm = normAngka(teks);
+  const rtrw = teksNorm.match(/RT\s*\/?\s*RW\s*[:.]?\s*(\d{1,3})\s*\/\s*(\d{1,3})/i)
+    || teksNorm.match(/RT\s*[:.]?\s*(\d{1,3})\s*\/\s*RW\s*[:.]?\s*(\d{1,3})/i);
   if(rtrw) hasil.buyer_rt_rw = rtrw[1].padStart(3, "0") + "/" + rtrw[2].padStart(3, "0");
   const alamat = ambilLabel(lines, /^Alamat\s*[:.]?\s*(.+)$/i);
   if(alamat){
@@ -514,14 +525,26 @@ function parseKTP(teks){
     if(rtrw){ const potong = a.search(/\s+RT\b/i); if(potong > 0) a = a.slice(0, potong); }
     hasil.buyer_address = a.trim();
   }
-  const desa = ambilLabel(lines, /^(?:Kel\/Desa|Kelurahan|Kel|Desa)\s*[:.]?\s*(.+)$/i);
+  const cariBaris = re => { for(const l of lines){ const m = l.match(re); if(m) return bersihNilai(m[1]); } return ""; };
+  const desa = cariBaris(/^\W*(?:Kel\/?\s?Desa|Kelurahan|Kel|Desa)\b\s*[:.]?\s*(.+)$/i);
   if(desa) hasil.buyer_village = desa;
-  const kec = ambilLabel(lines, /^Kecamatan\s*[:.]?\s*(.+)$/i);
+  const kec = cariBaris(/Kecamatan\s*[:.]?\s*(.+)$/i);
   if(kec) hasil.buyer_district = kec;
-  const prov = ambilLabel(lines, /^PROVINSI\s+(.+)$/i);
-  if(prov) hasil.buyer_province = prov;
-  const kota = ambilLabel(lines, /^KABUPATEN\s+(.+)$/i) || ambilLabel(lines, /^KOTA\s+(.+)$/i);
-  if(kota) hasil.buyer_city = kota;
+  // Header KTP: baris "PROVINSI ..." dan tepat di bawahnya nama kota/kabupaten tanpa label.
+  const idxProv = lines.findIndex(l => /PROVINSI/i.test(l));
+  if(idxProv >= 0){
+    const prov = bersihNilai(lines[idxProv].replace(/^.*?PROVINSI\s*/i, ""));
+    if(prov) hasil.buyer_province = prov;
+    const setelah = lines[idxProv + 1];
+    if(setelah && !/NIK|Nama/i.test(setelah)){
+      const kota = bersihNilai(setelah.replace(/^(KABUPATEN|KOTA)\s+/i, ""));
+      if(kota) hasil.buyer_city = kota;
+    }
+  }
+  if(!hasil.buyer_city){
+    const kota = ambilLabel(lines, /^KABUPATEN\s+(.+)$/i) || ambilLabel(lines, /^KOTA\s+(.+)$/i);
+    if(kota) hasil.buyer_city = kota;
+  }
   return hasil;
 }
 $("f_doc_ktp").addEventListener("change", async e => {
