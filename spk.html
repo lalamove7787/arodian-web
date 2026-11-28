@@ -142,10 +142,11 @@
             <div><label>Nama *</label><input type="text" id="f_buyer_name" required></div>
             <div><label>No. KTP</label><input type="text" id="f_buyer_ktp" inputmode="numeric"></div>
             <div class="penuh"><label>Alamat</label><textarea id="f_buyer_address" rows="2"></textarea></div>
-            <div><label>Provinsi</label><input type="text" id="f_buyer_province"></div>
-            <div><label>Kota/Kabupaten</label><input type="text" id="f_buyer_city"></div>
+            <div><label>RT/RW</label><input type="text" id="f_buyer_rt_rw" placeholder="002/010"></div>
+            <div><label>Kel/Desa</label><input type="text" id="f_buyer_village"></div>
             <div><label>Kecamatan</label><input type="text" id="f_buyer_district"></div>
-            <div><label>Kelurahan</label><input type="text" id="f_buyer_village"></div>
+            <div><label>Kota/Kabupaten</label><input type="text" id="f_buyer_city"></div>
+            <div><label>Provinsi</label><input type="text" id="f_buyer_province"></div>
             <div><label>Kode Pos</label><input type="text" id="f_buyer_postal" inputmode="numeric"></div>
             <div><label>No. HP</label><input type="text" id="f_buyer_hp" inputmode="tel"></div>
             <div><label>No. Telpon</label><input type="text" id="f_buyer_phone" inputmode="tel"></div>
@@ -162,10 +163,11 @@
             <div><label>Nama</label><input type="text" id="f_invoice_name"></div>
             <div><label>No. KTP</label><input type="text" id="f_invoice_ktp" inputmode="numeric"></div>
             <div class="penuh"><label>Alamat</label><textarea id="f_invoice_address" rows="2"></textarea></div>
-            <div><label>Provinsi</label><input type="text" id="f_invoice_province"></div>
-            <div><label>Kota/Kabupaten</label><input type="text" id="f_invoice_city"></div>
+            <div><label>RT/RW</label><input type="text" id="f_invoice_rt_rw" placeholder="002/010"></div>
+            <div><label>Kel/Desa</label><input type="text" id="f_invoice_village"></div>
             <div><label>Kecamatan</label><input type="text" id="f_invoice_district"></div>
-            <div><label>Kelurahan</label><input type="text" id="f_invoice_village"></div>
+            <div><label>Kota/Kabupaten</label><input type="text" id="f_invoice_city"></div>
+            <div><label>Provinsi</label><input type="text" id="f_invoice_province"></div>
             <div><label>Kode Pos</label><input type="text" id="f_invoice_postal" inputmode="numeric"></div>
             <div><label>No. HP</label><input type="text" id="f_invoice_hp" inputmode="tel"></div>
             <div><label>No. Telpon</label><input type="text" id="f_invoice_phone" inputmode="tel"></div>
@@ -409,8 +411,8 @@ $("csvBtn").addEventListener("click", () => {
 
 /* ---------------- form ---------------- */
 const FIELDS = ["spk_date","sales_pic","sales_manager","store_name","store_phone","store_address",
-  "buyer_name","buyer_ktp","buyer_address","buyer_province","buyer_city","buyer_district","buyer_village","buyer_postal","buyer_hp","buyer_phone","buyer_email",
-  "invoice_name","invoice_ktp","invoice_address","invoice_province","invoice_city","invoice_district","invoice_village","invoice_postal","invoice_hp","invoice_phone","invoice_email",
+  "buyer_name","buyer_ktp","buyer_address","buyer_rt_rw","buyer_province","buyer_city","buyer_district","buyer_village","buyer_postal","buyer_hp","buyer_phone","buyer_email",
+  "invoice_name","invoice_ktp","invoice_address","invoice_rt_rw","invoice_province","invoice_city","invoice_district","invoice_village","invoice_postal","invoice_hp","invoice_phone","invoice_email",
   "model_name","price","color","dp","discount","vehicle_type","notes","payment_method","accessories",
   "deposit_method","deposit_date","deposit_amount"];
 function newSpk(){
@@ -503,12 +505,14 @@ function parseKTP(teks){
   if(nik.length >= 16) hasil.buyer_ktp = nik.slice(0, 16);
   const nama = ambilLabel(lines, /^Nama\s*[:.]?\s*(.+)$/i);
   if(nama) hasil.buyer_name = nama;
+  const rtrw = teks.match(/RT\s*\/?\s*RW\s*[:.]?\s*(\d{1,3})\s*\/\s*(\d{1,3})/i)
+    || teks.match(/RT\s*[:.]?\s*(\d{1,3})\s*\/\s*RW\s*[:.]?\s*(\d{1,3})/i);
+  if(rtrw) hasil.buyer_rt_rw = rtrw[1].padStart(3, "0") + "/" + rtrw[2].padStart(3, "0");
   const alamat = ambilLabel(lines, /^Alamat\s*[:.]?\s*(.+)$/i);
   if(alamat){
     let a = alamat;
-    const rtrw = teks.match(/RT\s*\/?\s*RW\s*[:.]?\s*(\d{1,3})\s*\/\s*(\d{1,3})/i);
-    if(rtrw && !/RT/i.test(a)) a += " RT " + rtrw[1].padStart(3, "0") + "/RW " + rtrw[2].padStart(3, "0");
-    hasil.buyer_address = a;
+    if(rtrw){ const potong = a.search(/\s+RT\b/i); if(potong > 0) a = a.slice(0, potong); }
+    hasil.buyer_address = a.trim();
   }
   const desa = ambilLabel(lines, /^(?:Kel\/Desa|Kelurahan|Kel|Desa)\s*[:.]?\s*(.+)$/i);
   if(desa) hasil.buyer_village = desa;
@@ -532,7 +536,7 @@ $("f_doc_ktp").addEventListener("change", async e => {
       if(m.status === "recognizing text") info.textContent = "Membaca KTP… " + Math.round((m.progress || 0) * 100) + "%";
     }});
     const hasil = parseKTP(data.text || "");
-    const labelIsi = { buyer_name: "Nama", buyer_ktp: "No. KTP", buyer_address: "Alamat", buyer_province: "Provinsi", buyer_city: "Kota/Kabupaten", buyer_district: "Kecamatan", buyer_village: "Kelurahan" };
+    const labelIsi = { buyer_name: "Nama", buyer_ktp: "No. KTP", buyer_address: "Alamat", buyer_rt_rw: "RT/RW", buyer_province: "Provinsi", buyer_city: "Kota/Kabupaten", buyer_district: "Kecamatan", buyer_village: "Kel/Desa" };
     const terisi = [];
     for(const k of Object.keys(hasil)){
       const el = $("f_" + k);
@@ -555,7 +559,7 @@ $("spkForm").addEventListener("submit", async e => {
     FIELDS.forEach(f => { let v = $("f_"+f).value; if(["price","dp","discount","deposit_amount"].includes(f)) v = Number(v||0); row[f] = v === "" ? null : v; });
     row.invoice_same_as_buyer = $("f_same").checked;
     if(row.invoice_same_as_buyer){
-      ["name","ktp","address","province","city","district","village","postal","hp","phone","email"].forEach(k => row["invoice_"+k] = row["buyer_"+k]);
+      ["name","ktp","address","rt_rw","province","city","district","village","postal","hp","phone","email"].forEach(k => row["invoice_"+k] = row["buyer_"+k]);
     }
     row.product_id = $("f_product").value ? Number($("f_product").value) : null;
     let id = editingId;
@@ -733,8 +737,8 @@ function barisData(pairs){
 function printSpk(id){
   const r = spkRows.find(x => x.id === id); if(!r) return;
   const kepala = `<div style="text-align:right;font-size:12px">No. SPK : <strong>${esc(r.spk_no)}</strong><br>Tanggal : ${esc(r.spk_date)}<br>Sales PIC : ${esc(r.sales_pic||"")}<br>Sales Manager : ${esc(r.sales_manager||"")}</div>`;
-  const pemesan = [["Nama", r.buyer_name],["No. KTP", r.buyer_ktp],["Alamat", r.buyer_address],["Provinsi", r.buyer_province],["Kota/Kabupaten", r.buyer_city],["Kecamatan", r.buyer_district],["Kelurahan", r.buyer_village],["Kode Pos", r.buyer_postal],["No. HP", r.buyer_hp],["No. Telpon", r.buyer_phone],["Email", r.buyer_email]];
-  const faktur = [["Nama", r.invoice_name],["No. KTP", r.invoice_ktp],["Alamat", r.invoice_address],["Provinsi", r.invoice_province],["Kota/Kabupaten", r.invoice_city],["Kecamatan", r.invoice_district],["Kelurahan", r.invoice_village],["Kode Pos", r.invoice_postal],["No. HP", r.invoice_hp],["No. Telpon", r.invoice_phone],["Email", r.invoice_email]];
+  const pemesan = [["Nama", r.buyer_name],["No. KTP", r.buyer_ktp],["Alamat", r.buyer_address],["RT/RW", r.buyer_rt_rw],["Kel/Desa", r.buyer_village],["Kecamatan", r.buyer_district],["Kota/Kabupaten", r.buyer_city],["Provinsi", r.buyer_province],["Kode Pos", r.buyer_postal],["No. HP", r.buyer_hp],["No. Telpon", r.buyer_phone],["Email", r.buyer_email]];
+  const faktur = [["Nama", r.invoice_name],["No. KTP", r.invoice_ktp],["Alamat", r.invoice_address],["RT/RW", r.invoice_rt_rw],["Kel/Desa", r.invoice_village],["Kecamatan", r.invoice_district],["Kota/Kabupaten", r.invoice_city],["Provinsi", r.invoice_province],["Kode Pos", r.invoice_postal],["No. HP", r.invoice_hp],["No. Telpon", r.invoice_phone],["Email", r.invoice_email]];
   const kendaraan = [["Model", r.model_name],["Harga", rp(r.price)],["Warna", r.color],["Down Payment", rp(r.dp)],["Diskon", rp(r.discount)],["Tipe", r.vehicle_type],["Keterangan", r.notes],["Cara Pembayaran", r.payment_method],["Aksesoris", r.accessories]];
   const jaminan = r.deposit_method ? `<p><strong>Tanda Terima Uang Jaminan</strong> — ${r.deposit_method === "transfer" ? "Transfer" : "Tunai"}, Tanggal : ${esc(r.deposit_date||"")}, Jumlah : ${rp(r.deposit_amount)}</p>` : "";
   $("printArea").innerHTML = `
